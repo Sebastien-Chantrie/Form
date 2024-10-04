@@ -4,17 +4,18 @@ import { Button } from '@/components/atoms/button';
 import { LabelInput } from '@/components/molecules/label-input';
 import zxcvbn from 'zxcvbn';
 import { ZXCVBNScore } from 'zxcvbn';
+import { useTheme } from '../../app/hooks/useTheme';
 
 export function RegisterForm() {
     const [password, setPassword] = useState('');
     const [passwordStrength, setPasswordStrength] = useState(0);
+    const { theme, toggleTheme } = useTheme();
     
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newPassword = e.target.value;
         setPassword(newPassword);
         const result = zxcvbn(newPassword);
         
-        // Ajustement de la force du mot de passe
         let adjustedScore = result.score;
         if (newPassword.length < 8) {
             adjustedScore = Math.min(adjustedScore, 2) as ZXCVBNScore;
@@ -27,14 +28,12 @@ export function RegisterForm() {
     };
 
     const getPasswordStrengthColor = (strength: number) => {
-        switch (strength) {
-            case 0: return 'bg-red-500';
-            case 1: return 'bg-orange-500';
-            case 2: return 'bg-yellow-500';
-            case 3: return 'bg-green-500';
-            case 4: return 'bg-teal-500';
-            default: return 'bg-gray-200';
-        }
+        const colors = {
+            light: ['red-500', 'orange-500', 'yellow-500', 'green-500', 'teal-500', 'gray-200'],
+            dark: ['red-700', 'orange-700', 'yellow-600', 'green-700', 'teal-600', 'gray-700']
+        };
+        const colorSet = colors[theme as keyof typeof colors];
+        return `bg-${colorSet[strength] || colorSet[5]}`;
     };
 
     const getPasswordStrengthLabel = () => {
@@ -49,7 +48,7 @@ export function RegisterForm() {
     };
 
     return (
-        <form className="mt-8 space-y-6">
+        <form className={`mt-8 space-y-6 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
             <LabelInput
                 label="Nom"
                 id="lastname"
@@ -83,14 +82,14 @@ export function RegisterForm() {
 
             <div className="mt-2 space-y-2">
                 <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                         Sécurité du mot de passe
                     </span>
-                    <span className="text-sm font-semibold" style={{ color: getPasswordStrengthColor(passwordStrength) }}>
+                    <span className={`text-sm font-semibold ${getPasswordStrengthColor(passwordStrength).replace('bg-', 'text-')}`}>
                         {getPasswordStrengthLabel()}
                     </span>
                 </div>
-                <div className="w-full h-2 overflow-hidden rounded-full bg-gray-200">
+                <div className={`w-full h-2 overflow-hidden rounded-full ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`}>
                     <div
                         className={`h-full ease-in-out duration-300 transition-all ${getPasswordStrengthColor(passwordStrength)}`}
                         style={{ width: `${(passwordStrength + 1) * 20}%` }}
